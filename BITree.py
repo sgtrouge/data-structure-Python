@@ -1,20 +1,26 @@
 class BITree:
     def __init__(self, max_bound = 1000000, init_list = []):
-        self._ds = {}
+        self._count = {}
         self._max_bound = max_bound
         self._counter = {}
         self._sum = {}
         for element in init_list:
             self.add(element)
 
+    def clear(self):
+        self._count.clear()
+        self._sum.clear()
+
+
+#--------------------------FENWICK-OPERATION------------------------------#
     def _upTree(self, num, value, ori_num):
         if (num > self._max_bound):
             return;
-        if (num not in self._ds):
-            self._ds[num] = value
+        if (num not in self._count):
+            self._count[num] = value
             self._sum[num] = ori_num
         else:
-            self._ds[num] += value
+            self._count[num] += value
             self._sum[num] += ori_num
         self._upTree(num + (num & - num), value, ori_num)
 
@@ -22,7 +28,7 @@ class BITree:
         if (command_type == 'sum'):
             tmp_ds = self._sum
         else:
-            tmp_ds = self._ds
+            tmp_ds = self._count
 
         if (num in tmp_ds):
             tmp = tmp_ds[num]
@@ -33,6 +39,8 @@ class BITree:
             return tmp
         else:
             return tmp + self._downTree(num - (num & - num), command_type)
+
+#--------------------------BASIC-OPERATION---------------------------------#
 
     def add(self, num, value = 1):
         # O(log(max_bound))
@@ -49,6 +57,7 @@ class BITree:
         self._counter[num] -= value
         self._upTree(num, -value, -num)
 
+#--------------------------AGGREGATION------------------------------------#
     def countRange(self, x_range, y_range):
         lower_range = min([x_range, y_range])
         upper_range = max([x_range, y_range])
@@ -63,6 +72,7 @@ class BITree:
         upsum = self._downTree(upper_range, 'sum')
         return upsum - lowsum
 
+#--------------------------ORDER-STATISTIC---------------------------------#
     def meanRange(self, x_range, y_range):
         tmp_sum = self.sumRange(x_range, y_range);
         tmp_count = self.countRange(x_range, y_range);
@@ -72,7 +82,29 @@ class BITree:
             return tmp_sum*1.0/tmp_count
 
     def maxRange(self, x_range, y_range):
-        return
+        tmp_count = self.countRange(x_range, y_range);
+        return self.orderStat(x_range, y_range, tmp_count)
 
-    def clear(self):
-        self._ds.clear()
+    def minRange(self, x_range, y_range):
+        return self.orderStat(x_range, y_range, 1)
+
+    def medianRange(self, x_range, y_range):
+        tmp_count = (self.countRange(x_range, y_range) + 1)/2
+        return self.orderStat(x_range, y_range, tmp_count)
+
+    def orderStat(self, x_range, y_range, order):
+        lower_range = min([x_range, y_range])
+        upper_range = max([x_range, y_range])
+        base_range = lower_range
+        if (self.countRange(lower_range, upper_range) < order):
+            print ("Error: Not enough elements in this range to find order")
+            return
+        res = 0
+        while (lower_range <= upper_range):
+            mid = (lower_range + upper_range)/2
+            if (self.countRange(base_range, mid) >= order):
+                res = mid
+                upper_range = mid-1
+            else:
+                lower_range = mid+1
+        return res
