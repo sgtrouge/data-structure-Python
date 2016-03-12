@@ -6,3 +6,6 @@ A dynamic data structure that support aggregation method, like finding sum of va
 
 #TODO
 Add support for negative integer! (can mimic symmetrically previous code)
+
+#NEXT
+String algorithms: Palindrome searching O(n), Z-function and KMP for string matching O(n), dictionary ordering with trie.
